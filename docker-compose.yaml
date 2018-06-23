@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  server:
+    volumes:
+      - data:/home/mymedia
+      - ${MUSIC}:/library/music:ro
+      - ${PLAYLISTS}:/library/playlists:ro
+      - ${ITUNES}:/library/itunes:ro
+    restart: unless-stopped
+    hostname: ${HOSTNAME}
+    domainname: ${DOMAIN}
+    ports:
+      - ${SOURCE_IP_PORT}:52050/tcp
+      - 52051:52051/tcp
+    environment:
+      - VIRTUAL_HOST=${HOSTNAME}.${DOMAIN}
+      - VIRTUAL_PORT=52051
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: unless-stopped
+    ports:
+      - ${HTTPS_IP_PORT}:443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ${SSL_CERTS_PATH}:/etc/nginx/certs:ro
+
+volumes:
+  data:
+    driver: local
